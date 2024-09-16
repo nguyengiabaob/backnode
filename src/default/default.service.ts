@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { PersonalProfileView } from './model/PersonalProfileViewModel';
-import { Prisma } from '@prisma/client';
+import { PersonalProfile, Prisma } from '@prisma/client';
 import { CheckValidString } from 'common/generalFunction';
 import { GeneralFunction } from 'src/general.service';
 import dayjs from 'dayjs';
@@ -20,10 +20,10 @@ export class DefaultService {
   async work_PersonalProfiles(email:string)
   {
     console.log('dada',email);
-    let resultQuery: Prisma.PrismaPromise<PersonalProfileView[]>;
+    let resultQuery: Prisma.PrismaPromise<PersonalProfile[]>;
     if(!email)
     {
-      resultQuery = this.prisma.$queryRaw<PersonalProfileView[]>`Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1 `
+      resultQuery = this.prisma.$queryRaw<PersonalProfile[]>`Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1 `
     }
     else
     {
@@ -35,7 +35,7 @@ export class DefaultService {
       }
     
       
-      resultQuery = this.prisma.$queryRaw<PersonalProfileView[]>`Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1  and email=${email}`
+      resultQuery = this.prisma.$queryRaw<PersonalProfile[]>`Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1  and email=${email}`
     
     }
     return resultQuery ;
@@ -74,7 +74,14 @@ export class DefaultService {
               endDay= date;
               break;
           }
-      }
+          let project = await this.prisma.$queryRaw<>`select Id,UserWorkflowId,RuleViewWork from Dynamic.Data_RESOURCEDA  where UserWorkflowId=${projectId} and ISNULL(IsDeleted,'False')='False'`;
+      
+          if(project && project.ruleViewWork)
+          {
+
+          }
+      
+        }
   }
 
 }
