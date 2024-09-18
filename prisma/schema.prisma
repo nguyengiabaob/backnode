@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  previewFeatures = ["metrics", "multiSchema"]
 }
 
 datasource db {
@@ -4777,6 +4777,7 @@ model Data_RESOURCEDA {
   Quytrinhcongviec              String?   @db.NVarChar(Max)
   ShowHideTabInProject          String?   @db.NVarChar(Max)
   AllowWorkChildViewParent      Boolean?
+  SetUpTimeNotiWorkEnd          Decimal?  @db.Decimal(18, 4)
 
   @@schema("Dynamic")
 }
@@ -9210,4 +9211,1366 @@ model WorkViewColumnByUser {
   ColumnName String? @db.VarChar(150)
 
   @@schema("Dynamic")
+}
+
+model AssignmentRule {
+  Id           BigInt    @id(map: "PK_AssignmentRule") @default(autoincrement())
+  Name         String?   @db.NVarChar(Max)
+  AssignedTo   String?   @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+  Order        Int?
+
+  @@schema("dbo")
+}
+
+model AuthorizeApproval {
+  Id                BigInt    @id(map: "PK_AuthorizeApproval") @default(autoincrement())
+  UserId            BigInt
+  AuthorizedUserIds String    @db.NVarChar(Max)
+  FromDate          DateTime
+  ToDate            DateTime?
+  WorkflowIds       String?   @db.NVarChar(Max)
+  Description       String?   @db.NVarChar(Max)
+  CreatedBy         String?   @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?   @db.NVarChar(Max)
+  IsDeleted         Boolean
+
+  @@schema("dbo")
+}
+
+model CheckList {
+  Id                                  BigInt               @id(map: "PK_CheckList") @default(autoincrement())
+  Title                               String?              @db.NVarChar(Max)
+  WorkflowStepId                      BigInt?
+  TypeId                              BigInt?
+  IsRequired                          Boolean
+  IsQRCode                            Boolean
+  IsSignature                         Boolean
+  CreatedBy                           String?              @db.NVarChar(Max)
+  CreatedTime                         DateTime?
+  LastModified                        DateTime?
+  ModifiedBy                          String?              @db.NVarChar(Max)
+  IsDeleted                           Boolean
+  Order                               Int?
+  IsReplaceText                       Boolean?             @default(false, map: "DF__CheckList__IsRep__7B7B4DDC")
+  IsReplaceSignature                  Boolean              @default(false, map: "DF__CheckList__IsRep__7C6F7215")
+  IsPublicForEveryone                 Boolean              @default(false, map: "DF__CheckList__IsPub__7D63964E")
+  IsReplaceFlashSignature             Boolean              @default(false, map: "DF__CheckList__IsRep__7E57BA87")
+  Permission                          String?              @db.NVarChar(Max)
+  IsOnlyAllowedAttachedAfterApproving Boolean              @default(false, map: "DF__CheckList__IsOnl__004002F9")
+  IsAutoWatermarkEmbedWhenDownload    Boolean              @default(false, map: "DF__CheckList__IsAut__01342732")
+  IsSignaturedManually                Boolean              @default(false, map: "DF__CheckList__IsSig__1554F282")
+  CustomFile                          String?              @db.NVarChar(Max)
+  WorkflowStep                        WorkflowStep?        @relation(fields: [WorkflowStepId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CheckList_WorkflowStep_WorkflowStepId")
+  CheckListAllowStep                  CheckListAllowStep[]
+
+  @@schema("dbo")
+}
+
+model CheckListAllowStep {
+  Id             BigInt       @id(map: "PK_CheckListAllowStep") @default(autoincrement())
+  CheckListId    BigInt
+  WorkflowStepId BigInt
+  CreatedBy      String?      @db.NVarChar(Max)
+  CreatedTime    DateTime?
+  LastModified   DateTime?
+  ModifiedBy     String?      @db.NVarChar(Max)
+  IsDeleted      Boolean
+  CheckList      CheckList    @relation(fields: [CheckListId], references: [Id], onUpdate: NoAction, map: "FK_CheckListAllowStep_CheckList_CheckListId")
+  WorkflowStep   WorkflowStep @relation(fields: [WorkflowStepId], references: [Id], onUpdate: NoAction, map: "FK_CheckListAllowStep_WorkflowStep_WorkflowStepId")
+
+  @@schema("dbo")
+}
+
+model Condition {
+  Id             BigInt       @id(map: "PK_Condition") @default(autoincrement())
+  WorkflowRuleId BigInt
+  Variable       String?      @db.NVarChar(Max)
+  Conditional    String?      @db.NVarChar(Max)
+  Value          String?      @db.NVarChar(Max)
+  NextCondition  String?      @db.NVarChar(Max)
+  Order          Int
+  CreatedBy      String?      @db.NVarChar(Max)
+  CreatedTime    DateTime?
+  LastModified   DateTime?
+  ModifiedBy     String?      @db.NVarChar(Max)
+  IsDeleted      Boolean
+  WorkflowRule   WorkflowRule @relation(fields: [WorkflowRuleId], references: [Id], onUpdate: NoAction, map: "FK_Condition_WorkflowRule_WorkflowRuleId")
+
+  @@schema("dbo")
+}
+
+model ConditionDefaultValueType {
+  Id                       BigInt                     @id(map: "PK_ConditionDefaultValueType") @default(autoincrement())
+  Name                     String?                    @db.NVarChar(Max)
+  CreatedBy                String?                    @db.NVarChar(Max)
+  CreatedTime              DateTime?
+  LastModified             DateTime?
+  ModifiedBy               String?                    @db.NVarChar(Max)
+  IsDeleted                Boolean
+  ConditionDefaultVariable ConditionDefaultVariable[]
+
+  @@schema("dbo")
+}
+
+model ConditionDefaultVariable {
+  Id                        BigInt                     @id(map: "PK_ConditionDefaultVariable") @default(autoincrement())
+  Name                      String?                    @db.NVarChar(Max)
+  DefaultTypeId             BigInt?
+  Value                     String?                    @db.NVarChar(Max)
+  CreatedBy                 String?                    @db.NVarChar(Max)
+  CreatedTime               DateTime?
+  LastModified              DateTime?
+  ModifiedBy                String?                    @db.NVarChar(Max)
+  IsDeleted                 Boolean
+  ConditionDefaultValueType ConditionDefaultValueType? @relation(fields: [DefaultTypeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ConditionDefaultVariable_ConditionDefaultValueType_DefaultTypeId")
+
+  @@schema("dbo")
+}
+
+model CookieBlackList {
+  Id           BigInt    @id(map: "PK_CookieBlackList") @default(autoincrement())
+  Cookie       String    @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+
+  @@schema("dbo")
+}
+
+model CookieUser {
+  Id           BigInt    @id(map: "PK_CookieUser") @default(autoincrement())
+  Cookie       String    @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+  IsDisabled   Boolean
+  Email        String    @db.NVarChar(Max)
+
+  @@schema("dbo")
+}
+
+model CustomWorkingTime {
+  Id                BigInt          @id(map: "PK_CustomWorkingTime") @default(autoincrement())
+  WorkweekId        BigInt
+  PersonalProfileId BigInt
+  MorningStart      Float?
+  MorningEnd        Float?
+  AfternoonStart    Float?
+  AfternoonEnd      Float?
+  CreatedBy         String?         @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?         @db.NVarChar(Max)
+  IsDeleted         Boolean
+  PersonalProfile   PersonalProfile @relation(fields: [PersonalProfileId], references: [Id], onUpdate: NoAction, map: "FK_CustomWorkingTime_PersonalProfile_PersonalProfileId")
+  Workweek          Workweek        @relation(fields: [WorkweekId], references: [Id], onUpdate: NoAction, map: "FK_CustomWorkingTime_Workweek_WorkweekId")
+
+  @@schema("dbo")
+}
+
+model DataJsonLog {
+  Id                 BigInt    @id(map: "PK_DataJsonLog") @default(autoincrement())
+  Old                String?   @db.NVarChar(Max)
+  New                String?   @db.NVarChar(Max)
+  UserWorkflowId     BigInt?
+  CreatedBy          String?   @db.NVarChar(Max)
+  CreatedTime        DateTime?
+  LastModified       DateTime?
+  ModifiedBy         String?   @db.NVarChar(Max)
+  IsDeleted          Boolean
+  IsUserWorkflowStep Boolean   @default(false, map: "DF__DataJsonL__IsUse__62147A47")
+
+  @@schema("dbo")
+}
+
+model DefaultCompanySignature {
+  Id            BigInt    @id(map: "PK_DefaultCompanySignature") @default(autoincrement())
+  uid           String    @db.NVarChar(Max)
+  password      String    @db.NVarChar(Max)
+  client_id     String    @db.NVarChar(Max)
+  client_secret String    @db.NVarChar(Max)
+  user_secret   String    @db.NVarChar(Max)
+  ImagePath     String?   @db.NVarChar(Max)
+  SignedBy      String?   @db.NVarChar(Max)
+  Email         String?   @db.NVarChar(Max)
+  IsShowText    Boolean
+  VisibleType   Int
+  FontSize      Int
+  Signatures    String?   @db.NVarChar(Max)
+  CreatedBy     String?   @db.NVarChar(Max)
+  CreatedTime   DateTime?
+  LastModified  DateTime?
+  ModifiedBy    String?   @db.NVarChar(Max)
+  IsDeleted     Boolean
+
+  @@schema("dbo")
+}
+
+model DefaultSignatureImage {
+  Id           BigInt    @id(map: "PK_DefaultSignatureImage") @default(autoincrement())
+  Title        String?   @db.NVarChar(Max)
+  Description  String?   @db.NVarChar(Max)
+  Path         String?   @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+  Permission   String?   @db.NVarChar(Max)
+
+  @@schema("dbo")
+}
+
+model Department {
+  Id                                                       BigInt            @id(map: "PK_Department") @default(autoincrement())
+  Title                                                    String            @db.NVarChar(Max)
+  Code                                                     String            @db.NVarChar(Max)
+  Description                                              String?           @db.NVarChar(Max)
+  ParentId                                                 BigInt?
+  ChartCode                                                String?           @db.NVarChar(Max)
+  ManagerId                                                BigInt?
+  DeptLevel                                                Int
+  Email                                                    String?           @db.NVarChar(Max)
+  Telephone                                                String?           @db.NVarChar(Max)
+  Fax                                                      String?           @db.NVarChar(Max)
+  Address                                                  String?           @db.NVarChar(Max)
+  SiteName                                                 String?           @db.NVarChar(Max)
+  Order                                                    Int?
+  CreatedBy                                                String?           @db.NVarChar(Max)
+  CreatedTime                                              DateTime?
+  LastModified                                             DateTime?
+  ModifiedBy                                               String?           @db.NVarChar(Max)
+  IsDeleted                                                Boolean
+  TitleEN                                                  String?           @db.NVarChar(Max)
+  Department                                               Department?       @relation("DepartmentToDepartment", fields: [ParentId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Department_Department_ParentId")
+  other_Department                                         Department[]      @relation("DepartmentToDepartment")
+  PersonalProfile_Department_ManagerIdToPersonalProfile    PersonalProfile?  @relation("Department_ManagerIdToPersonalProfile", fields: [ManagerId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Department_PersonalProfile_ManagerId")
+  Group                                                    Group[]
+  PersonalProfile_PersonalProfile_DepartmentIdToDepartment PersonalProfile[] @relation("PersonalProfile_DepartmentIdToDepartment")
+
+  @@schema("dbo")
+}
+
+model DocumentType {
+  Id           BigInt    @id(map: "PK_DocumentType") @default(autoincrement())
+  Title        String    @db.NVarChar(Max)
+  Code         String?   @db.NVarChar(Max)
+  Description  String?   @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+  TitleEN      String?   @db.NVarChar(Max)
+
+  @@schema("dbo")
+}
+
+model ErrorLog {
+  Id           BigInt    @id(map: "PK_ErrorLog") @default(autoincrement())
+  Name         String?   @db.NVarChar(Max)
+  Number       String?   @db.NVarChar(Max)
+  Description  String?   @db.NVarChar(Max)
+  Ip           String?   @db.NVarChar(Max)
+  Time         DateTime
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+
+  @@schema("dbo")
+}
+
+model FastApiQueryDataResult {
+  Id             BigInt    @id(map: "PK_FastApiQueryDataResult") @default(autoincrement())
+  UserWorkflowId BigInt?
+  IsSuccess      Boolean
+  Response       String?   @db.NVarChar(Max)
+  RequestForm    String?   @db.NVarChar(Max)
+  RequestData    String?   @db.NVarChar(Max)
+  CreatedBy      String?   @db.NVarChar(Max)
+  CreatedTime    DateTime?
+  LastModified   DateTime?
+  ModifiedBy     String?   @db.NVarChar(Max)
+  IsDeleted      Boolean
+
+  @@schema("dbo")
+}
+
+model Group {
+  Id                   BigInt                 @id(map: "PK_Group") @default(autoincrement())
+  Title                String?                @db.NVarChar(Max)
+  DepartmentId         BigInt?
+  CreatedBy            String?                @db.NVarChar(Max)
+  CreatedTime          DateTime?
+  LastModified         DateTime?
+  ModifiedBy           String?                @db.NVarChar(Max)
+  IsDeleted            Boolean
+  Department           Department?            @relation(fields: [DepartmentId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Group_Department_DepartmentId")
+  GroupPersonalProfile GroupPersonalProfile[]
+
+  @@schema("dbo")
+}
+
+model GroupPersonalProfile {
+  GroupsId           BigInt
+  PersonalProfilesId BigInt
+  Group              Group           @relation(fields: [GroupsId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_GroupPersonalProfile_Group_GroupsId")
+  PersonalProfile    PersonalProfile @relation(fields: [PersonalProfilesId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_GroupPersonalProfile_PersonalProfile_PersonalProfilesId")
+
+  @@id([GroupsId, PersonalProfilesId], map: "PK_GroupPersonalProfile")
+  @@schema("dbo")
+}
+
+model Logs {
+  Id              Int       @id(map: "PK_Logs") @default(autoincrement())
+  Message         String?   @db.NVarChar(Max)
+  MessageTemplate String?   @db.NVarChar(Max)
+  Level           String?   @db.NVarChar(Max)
+  TimeStamp       DateTime? @db.DateTime
+  Exception       String?   @db.NVarChar(Max)
+  Properties      String?   @db.NVarChar(Max)
+
+  @@schema("dbo")
+}
+
+model MailModule {
+  Id           BigInt         @id(map: "PK_MailModule") @default(autoincrement())
+  Name         String?        @db.NVarChar(Max)
+  CreatedBy    String?        @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?        @db.NVarChar(Max)
+  IsDeleted    Boolean
+  MailTemplate MailTemplate[]
+
+  @@schema("dbo")
+}
+
+model MailTemplate {
+  Id                BigInt      @id(map: "PK_MailTemplate") @default(autoincrement())
+  Name              String?     @db.NVarChar(Max)
+  MailModuleId      BigInt?
+  Subject           String?     @db.NVarChar(Max)
+  SubjectEN         String?     @db.NVarChar(Max)
+  SubjectParameters String?     @db.NVarChar(Max)
+  Content           String?     @db.NVarChar(Max)
+  ContentParameters String?     @db.NVarChar(Max)
+  CreatedBy         String?     @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?     @db.NVarChar(Max)
+  IsDeleted         Boolean
+  MailModule        MailModule? @relation(fields: [MailModuleId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_MailTemplate_MailModule_MailModuleId")
+
+  @@schema("dbo")
+}
+
+model NavBarMenu {
+  Id               BigInt       @id(map: "PK_NavBarMenu") @default(autoincrement())
+  MenuId           String?      @db.NVarChar(Max)
+  Title            String?      @db.NVarChar(Max)
+  Icon             String?      @db.NVarChar(Max)
+  Url              String?      @db.NVarChar(Max)
+  Outside          Boolean
+  IsDefault        Boolean
+  ParentId         BigInt?
+  CreatedBy        String?      @db.NVarChar(Max)
+  CreatedTime      DateTime?
+  LastModified     DateTime?
+  ModifiedBy       String?      @db.NVarChar(Max)
+  IsDeleted        Boolean
+  AssignmentTo     String?      @db.NVarChar(Max)
+  Order            Int          @default(1, map: "DF__NavBarMen__Order__041093DD")
+  EngTitle         String?      @db.NVarChar(Max)
+  NavBarMenu       NavBarMenu?  @relation("NavBarMenuToNavBarMenu", fields: [ParentId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_NavBarMenu_NavBarMenu_ParentId")
+  other_NavBarMenu NavBarMenu[] @relation("NavBarMenuToNavBarMenu")
+
+  @@schema("dbo")
+}
+
+model OldWorkflowData {
+  OldWorkflowId BigInt  @id(map: "PK_OldWorkflowData")
+  ImageUrl      String? @db.NVarChar(500)
+  Title         String? @db.NVarChar(500)
+
+  @@schema("dbo")
+}
+
+model PersonalProfile {
+  Id                                                  BigInt                   @id(map: "PK_PersonalProfile") @default(autoincrement())
+  AccountId                                           String?                  @db.NVarChar(Max)
+  AccountName                                         String                   @db.NVarChar(Max)
+  Name                                                String?                  @db.NVarChar(Max)
+  FullName                                            String?                  @db.NVarChar(Max)
+  DepartmentId                                        BigInt
+  ManagerId                                           BigInt?
+  PositionId                                          BigInt?
+  Gender                                              Boolean
+  BirthDay                                            DateTime?
+  Address                                             String?                  @db.NVarChar(Max)
+  StaffId                                             String?                  @db.NVarChar(Max)
+  DateOfHire                                          DateTime?
+  Mobile                                              String?                  @db.NVarChar(Max)
+  Email                                               String?                  @db.NVarChar(150)
+  ImageId                                             BigInt?
+  ImagePath                                           String?                  @db.NVarChar(Max)
+  SignatureUserName                                   String?                  @db.NVarChar(Max)
+  SignaturePassword                                   String?                  @db.NVarChar(Max)
+  EnableSignature                                     Boolean
+  UserStatus                                          Int?
+  CreatedBy                                           String?                  @db.NVarChar(Max)
+  CreatedTime                                         DateTime?
+  LastModified                                        DateTime?
+  ModifiedBy                                          String?                  @db.NVarChar(Max)
+  IsDeleted                                           Boolean
+  SignatureTitle                                      String?                  @db.NVarChar(Max)
+  SignatureEmail                                      String?                  @db.NVarChar(Max)
+  UserLevel                                           Int?
+  UserPosition                                        BigInt?
+  SignatureImage                                      String?                  @db.NVarChar(Max)
+  IsDarkMode                                          Boolean?                 @default(false, map: "DF__PersonalP__IsDar__05F8DC4F")
+  FlashSignatureImage                                 String?                  @db.NVarChar(Max)
+  Lang                                                String?                  @db.NVarChar(Max)
+  CoverImageId                                        BigInt?
+  CoverImagePath                                      String?                  @db.NVarChar(Max)
+  ThumbnailImageId                                    BigInt?
+  ThumbnailImagePath                                  String?                  @db.NVarChar(Max)
+  EnableEmail                                         Boolean                  @default(true, map: "DF__PersonalP__Enabl__2F4FF79D")
+  EnableNotification                                  Boolean                  @default(true, map: "DF__PersonalP__Enabl__30441BD6")
+  SubDepartmentIds                                    String?                  @db.NVarChar(Max)
+  CalendarChecked                                     String?                  @db.NVarChar(Max)
+  CalendarColor                                       String?                  @db.NVarChar(Max)
+  DailyView                                           String?                  @db.NVarChar(Max)
+  MonthlyView                                         String?                  @db.NVarChar(Max)
+  WeeklyView                                          String?                  @db.NVarChar(Max)
+  CalendarResourceSelected                            String?                  @db.NVarChar(Max)
+  CalendarUserFillter                                 String?                  @db.NVarChar(Max)
+  IsSyncCalendar                                      String?                  @db.NVarChar(Max)
+  TwoFactorEnabled                                    Boolean?
+  LastPasswordChanged                                 DateTime                 @default(now(), map: "DF__PersonalP__LastP__014DF9D5")
+  AuthorizeAutomaticDigitalSigningEnabled             Boolean?
+  CalendarResourceChecked                             String?                  @db.NVarChar(Max)
+  InternalPhone                                       String?                  @db.NVarChar(Max)
+  IsAllowedToUseTheCompanysDigitalSignature           Boolean?
+  CustomWorkingTime                                   CustomWorkingTime[]
+  Department_Department_ManagerIdToPersonalProfile    Department[]             @relation("Department_ManagerIdToPersonalProfile")
+  GroupPersonalProfile                                GroupPersonalProfile[]
+  Department_PersonalProfile_DepartmentIdToDepartment Department               @relation("PersonalProfile_DepartmentIdToDepartment", fields: [DepartmentId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PersonalProfile_Department_DepartmentId")
+  PersonalProfile                                     PersonalProfile?         @relation("PersonalProfileToPersonalProfile", fields: [ManagerId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PersonalProfile_PersonalProfile_ManagerId")
+  other_PersonalProfile                               PersonalProfile[]        @relation("PersonalProfileToPersonalProfile")
+  Position                                            Position?                @relation(fields: [PositionId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PersonalProfile_Position_PositionId")
+  PropertyUserAuthorize                               PropertyUserAuthorize[]
+  SupportContact                                      SupportContact[]
+  UserCheckListChangelog                              UserCheckListChangelog[]
+  UserWorkflow                                        UserWorkflow[]
+  UserWorkflowNote                                    UserWorkflowNote[]
+  UserWorkflowRelated                                 UserWorkflowRelated[]
+  UserWorkflowSeen                                    UserWorkflowSeen[]
+  UserWorkflowShare                                   UserWorkflowShare[]
+  UserWorkflowStep                                    UserWorkflowStep[]
+  VnptSmartCA                                         VnptSmartCA[]
+  VnptSmartCAQueue                                    VnptSmartCAQueue[]
+  WorkflowFavourite                                   WorkflowFavourite[]
+
+  @@schema("dbo")
+}
+
+model Position {
+  Id              BigInt            @id(map: "PK_Position") @default(autoincrement())
+  Title           String            @db.NVarChar(Max)
+  Code            String?           @db.NVarChar(Max)
+  Description     String?           @db.NVarChar(Max)
+  CreatedBy       String?           @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?           @db.NVarChar(Max)
+  IsDeleted       Boolean
+  TitleEN         String?           @db.NVarChar(Max)
+  PersonalProfile PersonalProfile[]
+
+  @@schema("dbo")
+}
+
+model Property {
+  Id                                BigInt                    @id(map: "PK_Property") @default(autoincrement())
+  Name                              String?                   @db.NVarChar(Max)
+  Label                             String?                   @db.NVarChar(Max)
+  IsRequired                        Boolean
+  IsViewOnly                        Boolean
+  IsSingle                          Boolean
+  IsMultiLine                       Boolean
+  IsChoice                          Boolean
+  IsNumber                          Boolean
+  IsCurrency                        Boolean
+  IsDateAndTime                     Boolean
+  IsLookup                          Boolean
+  IsYesNo                           Boolean
+  IsUser                            Boolean
+  IsCalculated                      Boolean
+  IsApi                             Boolean                   @default(false, map: "DF__Property__IsApi__011F1899")
+  StyleClass                        String?                   @db.NVarChar(Max)
+  ExecuteJS                         String?                   @db.NVarChar(Max)
+  VisibleCondition                  String?                   @db.NVarChar(Max)
+  Description                       String?                   @db.NVarChar(Max)
+  Order                             Int?
+  DefaultValue                      String?                   @db.NVarChar(Max)
+  DefaultTypeId                     BigInt?
+  SettingId                         BigInt?
+  WorkflowId                        BigInt?
+  CreatedBy                         String?                   @db.NVarChar(Max)
+  CreatedTime                       DateTime?
+  LastModified                      DateTime?
+  ModifiedBy                        String?                   @db.NVarChar(Max)
+  IsDeleted                         Boolean
+  IgnoreInReport                    Boolean                   @default(false, map: "DF__Property__Ignore__09C96D33")
+  IsMasterDetail                    Boolean                   @default(false, map: "DF__Property__IsMast__0ABD916C")
+  LabelEN                           String?                   @db.NVarChar(Max)
+  IsHideInCollapsing                Boolean?                  @default(false, map: "DF__Property__IsHide__0BB1B5A5")
+  OrderInReport                     Int?                      @default(0, map: "DF__Property__OrderI__0CA5D9DE")
+  WidthInReport                     BigInt?
+  CheckDuplicateResourceInTime      Boolean                   @default(false, map: "DF__Property__CheckD__0D99FE17")
+  IsEditDisabledWhenReturnAndRecall Boolean                   @default(false, map: "DF__Property__IsEdit__28E2F130")
+  SqlLength                         Int?
+  Placeholder                       String?                   @db.NVarChar(Max)
+  IsAllowUserAuthorized             Boolean                   @default(false, map: "DF__Property__IsAllo__0C1BFBC3")
+  PropertyDefaultValueType          PropertyDefaultValueType? @relation(fields: [DefaultTypeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Property_PropertyDefaultValueType_DefaultTypeId")
+  Workflow                          Workflow?                 @relation(fields: [WorkflowId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Property_Workflow_WorkflowId")
+  PropertyUserAuthorize             PropertyUserAuthorize[]
+
+  @@schema("dbo")
+}
+
+model PropertyChoice {
+  Id              BigInt          @id(map: "PK_PropertyChoice") @default(autoincrement())
+  Title           String?         @db.NVarChar(Max)
+  SettingId       BigInt
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PropertySetting PropertySetting @relation(fields: [SettingId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PropertyChoice_PropertySetting_SettingId")
+
+  @@schema("dbo")
+}
+
+model PropertyDefaultValueType {
+  Id                      BigInt                    @id(map: "PK_PropertyDefaultValueType") @default(autoincrement())
+  Name                    String?                   @db.NVarChar(Max)
+  CreatedBy               String?                   @db.NVarChar(Max)
+  CreatedTime             DateTime?
+  LastModified            DateTime?
+  ModifiedBy              String?                   @db.NVarChar(Max)
+  IsDeleted               Boolean
+  Property                Property[]
+  PropertyDefaultVariable PropertyDefaultVariable[]
+
+  @@schema("dbo")
+}
+
+model PropertyDefaultVariable {
+  Id                       BigInt                    @id(map: "PK_PropertyDefaultVariable") @default(autoincrement())
+  Name                     String?                   @db.NVarChar(Max)
+  DefaultTypeId            BigInt?
+  CreatedBy                String?                   @db.NVarChar(Max)
+  CreatedTime              DateTime?
+  LastModified             DateTime?
+  ModifiedBy               String?                   @db.NVarChar(Max)
+  IsDeleted                Boolean
+  PropertyDefaultValueType PropertyDefaultValueType? @relation(fields: [DefaultTypeId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_PropertyDefaultVariable_PropertyDefaultValueType_DefaultTypeId")
+
+  @@schema("dbo")
+}
+
+model PropertySetting {
+  Id                           BigInt           @id(map: "PK_PropertySetting") @default(autoincrement())
+  PropertyId                   BigInt
+  IsContent                    Boolean
+  IsHtml                       Boolean
+  Row                          Int?
+  Column                       Int?
+  Display                      Int
+  Minimum                      Decimal?         @db.Decimal(18, 2)
+  Maximum                      Decimal?         @db.Decimal(18, 2)
+  NumberOfDecimalPlaces        Int
+  IsPercentages                Boolean
+  CurrencyFormat               Boolean
+  IsDateOnly                   Boolean
+  AllowMultiple                Boolean
+  Formula                      String?          @db.NVarChar(Max)
+  CreatedBy                    String?          @db.NVarChar(Max)
+  CreatedTime                  DateTime?
+  LastModified                 DateTime?
+  ModifiedBy                   String?          @db.NVarChar(Max)
+  IsDeleted                    Boolean
+  PeopleOnly                   Boolean
+  IsPlainText                  Boolean?
+  IsSignature                  Boolean?
+  IsSumGrid                    Boolean?
+  DefaultValue                 Boolean?
+  ExtendField                  String?          @db.NVarChar(Max)
+  FromWeb                      Int?
+  InformationFrom              String?          @db.NVarChar(Max)
+  InThisColumn                 String?          @db.NVarChar(Max)
+  AllowInput                   Boolean?
+  RetrievedByTheRelatedProcess Boolean?
+  ApiUrl                       String?          @db.NVarChar(Max)
+  ApiSecretKey                 String?          @db.NVarChar(Max)
+  ApiLabelColumn               String?          @db.NVarChar(Max)
+  ApiValueColumn               String?          @db.NVarChar(Max)
+  ApiType                      Int?
+  FilterByProperty             String?          @db.NVarChar(Max)
+  FilterByColumn               String?          @db.NVarChar(Max)
+  Debounce                     Boolean?         @default(false, map: "DF__PropertyS__Debou__153B1FDF")
+  RecursivePermission          Boolean?         @default(false, map: "DF__PropertyS__Recur__29CAF557")
+  IsAverageGrid                Boolean          @default(false, map: "DF__PropertyS__IsAve__245DFD3C")
+  PropertyChoice               PropertyChoice[]
+
+  @@schema("dbo")
+}
+
+model PropertyUserAuthorize {
+  Id              BigInt          @id(map: "PK_PropertyUserAuthorize") @default(autoincrement())
+  PropertyId      BigInt
+  UserId          BigInt
+  UserWorkflowId  BigInt
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_PropertyUserAuthorize_PersonalProfile_UserId")
+  Property        Property        @relation(fields: [PropertyId], references: [Id], onUpdate: NoAction, map: "FK_PropertyUserAuthorize_Property_PropertyId")
+  UserWorkflow    UserWorkflow    @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_PropertyUserAuthorize_UserWorkflow_UserWorkflowId")
+
+  @@schema("dbo")
+}
+
+model PublicHoliday {
+  Id           BigInt    @id(map: "PK_PublicHoliday") @default(autoincrement())
+  Name         String    @db.NVarChar(Max)
+  Date         DateTime
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+
+  @@schema("dbo")
+}
+
+model PublicResource {
+  Id           BigInt    @id(map: "PK_PublicResource") @default(autoincrement())
+  Path         String?   @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+
+  @@schema("dbo")
+}
+
+model RecursivePermission {
+  Id                   BigInt    @id(map: "PK_RecursivePermission") @default(autoincrement())
+  ParentUserWorkflowId BigInt
+  ChildUserWorkflowId  BigInt
+  WorkflowId           BigInt
+  IsMasterDetail       Boolean
+  CreatedBy            String?   @db.NVarChar(Max)
+  CreatedTime          DateTime?
+  LastModified         DateTime?
+  ModifiedBy           String?   @db.NVarChar(Max)
+  IsDeleted            Boolean
+
+  @@schema("dbo")
+}
+
+model StepField {
+  Id                   BigInt    @id(map: "PK_StepField") @default(autoincrement())
+  StepId               BigInt
+  PropertyId           BigInt
+  IsHide               Boolean?
+  IsEdit               Boolean?
+  CreatedBy            String?   @db.NVarChar(Max)
+  CreatedTime          DateTime?
+  LastModified         DateTime?
+  ModifiedBy           String?   @db.NVarChar(Max)
+  IsDeleted            Boolean
+  IsAdd                Boolean   @default(false, map: "DF__StepField__IsAdd__29103BBE")
+  IsAutoGenerateNewRow Boolean   @default(false, map: "DF__StepField__IsAut__4FCBACDA")
+
+  @@schema("dbo")
+}
+
+model StepRelated {
+  Id                BigInt       @id(map: "PK_StepRelated") @default(autoincrement())
+  WorkflowStepId    BigInt
+  WorkflowId        BigInt
+  CreatedBy         String?      @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?      @db.NVarChar(Max)
+  IsDeleted         Boolean
+  StepRelated       StepRelated  @relation("StepRelatedToStepRelated", fields: [Id], references: [Id], onUpdate: NoAction, map: "FK_StepRelated_StepRelated")
+  other_StepRelated StepRelated? @relation("StepRelatedToStepRelated")
+  Workflow          Workflow     @relation(fields: [WorkflowId], references: [Id], onUpdate: NoAction, map: "FK_StepRelated_Workflow")
+  WorkflowStep      WorkflowStep @relation(fields: [WorkflowStepId], references: [Id], onUpdate: NoAction, map: "FK_StepRelated_WorkflowStep")
+
+  @@schema("dbo")
+}
+
+model Supplier {
+  Id           BigInt    @id(map: "PK_Supplier") @default(autoincrement())
+  Title        String?   @db.NVarChar(Max)
+  Name         String?   @db.NVarChar(Max)
+  Email        String?   @db.NVarChar(Max)
+  Address      String?   @db.NVarChar(Max)
+  Phone        String?   @db.NVarChar(Max)
+  Fax          String?   @db.NVarChar(Max)
+  TaxCode      String?   @db.NVarChar(Max)
+  BankAccount  String?   @db.NVarChar(Max)
+  BankName     String?   @db.NVarChar(Max)
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+
+  @@schema("dbo")
+}
+
+model SupportContact {
+  Id                BigInt          @id(map: "PK_SupportContact") @default(autoincrement())
+  Title             String?         @db.NVarChar(Max)
+  PhoneNumber       String?         @db.NVarChar(Max)
+  PersonalProfileId BigInt
+  CreatedBy         String?         @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?         @db.NVarChar(Max)
+  IsDeleted         Boolean
+  PersonalProfile   PersonalProfile @relation(fields: [PersonalProfileId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_SupportContact_PersonalProfile_PersonalProfileId")
+
+  @@schema("dbo")
+}
+
+model UserCheckListChangelog {
+  Id              BigInt          @id(map: "PK_UserCheckListChangelog") @default(autoincrement())
+  UserWorkflowId  BigInt
+  UserId          BigInt
+  Description     String?         @db.NVarChar(Max)
+  ActionType      Int
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_UserCheckListChangelog_PersonalProfile_UserId")
+
+  @@schema("dbo")
+}
+
+model UserCheckListManually {
+  Id              BigInt       @id(map: "PK_UserCheckListManually") @default(autoincrement())
+  UserCheckListId BigInt
+  UserWorkflowId  BigInt
+  Data            String?      @db.NVarChar(Max)
+  CreatedBy       String?      @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?      @db.NVarChar(Max)
+  IsDeleted       Boolean
+  UserWorkflow    UserWorkflow @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserCheckListManually_UserWorkflow_UserWorkflowId")
+
+  @@schema("dbo")
+}
+
+model UserWorkflow {
+  Id                                                                       BigInt                     @id(map: "PK_UserWorkflow") @default(autoincrement())
+  UserId                                                                   BigInt
+  WorkflowId                                                               BigInt
+  WorkflowStepId                                                           BigInt?
+  WorkflowCode                                                             String                     @db.NVarChar(Max)
+  ShortContent                                                             String?                    @db.NVarChar(Max)
+  Status                                                                   String?                    @db.NVarChar(Max)
+  CreatedBy                                                                String?                    @db.NVarChar(Max)
+  CreatedTime                                                              DateTime?
+  LastModified                                                             DateTime?
+  ModifiedBy                                                               String?                    @db.NVarChar(Max)
+  IsDeleted                                                                Boolean
+  IsDraft                                                                  Boolean?
+  UserWorkflowStatus                                                       Int?
+  Content                                                                  String?                    @db.NVarChar(Max)
+  Note                                                                     String?                    @db.NVarChar(Max)
+  Approver                                                                 String?                    @db.NVarChar(Max)
+  IsWaitingForAppoved                                                      Boolean                    @default(false, map: "DF__UserWorkf__IsWai__70148828")
+  MeetingRoom                                                              BigInt?
+  IsConverted                                                              Boolean?
+  MainUserWorkflowId                                                       BigInt?
+  WorkId                                                                   BigInt?
+  DueDate                                                                  DateTime?
+  UserStatus                                                               Int                        @default(1, map: "DF__UserWorkf__UserS__73FEEBAF")
+  WaitingForAppovedDescription                                             String?                    @db.NVarChar(Max)
+  RelatedId                                                                BigInt?
+  PropertyUserAuthorize                                                    PropertyUserAuthorize[]
+  UserCheckListManually                                                    UserCheckListManually[]
+  PersonalProfile                                                          PersonalProfile            @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserWorkflow_PersonalProfile_UserId")
+  Workflow                                                                 Workflow                   @relation(fields: [WorkflowId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserWorkflow_Workflow_WorkflowId")
+  WorkflowStep                                                             WorkflowStep?              @relation(fields: [WorkflowStepId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserWorkflow_WorkflowStep_WorkflowStepId")
+  UserWorkflowLinking_UserWorkflowLinking_LinkUserWorkflowIdToUserWorkflow UserWorkflowLinking[]      @relation("UserWorkflowLinking_LinkUserWorkflowIdToUserWorkflow")
+  UserWorkflowLinking_UserWorkflowLinking_MainUserWorkflowIdToUserWorkflow UserWorkflowLinking[]      @relation("UserWorkflowLinking_MainUserWorkflowIdToUserWorkflow")
+  UserWorkflowRelated                                                      UserWorkflowRelated[]
+  UserWorkflowSeen                                                         UserWorkflowSeen[]
+  UserWorkflowShare                                                        UserWorkflowShare[]
+  UserWorkflowStep                                                         UserWorkflowStep[]
+  UserWorkflowStepRelation                                                 UserWorkflowStepRelation[]
+  VnptSmartCAQueue                                                         VnptSmartCAQueue[]
+
+  @@schema("dbo")
+}
+
+model UserWorkflowFileBackUp {
+  Id              BigInt  @id(map: "PK_UserWorkflowFileBackUp") @default(autoincrement())
+  UserWorkflowId  BigInt
+  UserCheckListId BigInt
+  FileType        String? @db.VarChar(100)
+  Binary_Data     Bytes
+
+  @@schema("dbo")
+}
+
+model UserWorkflowJob {
+  Id              BigInt    @id(map: "PK_UserWorkflowJob") @default(autoincrement())
+  UserWorkflowId  BigInt?
+  UserCheckListId BigInt?
+  IsDone          Boolean
+  IsFail          Boolean
+  IsSucess        Boolean
+  CreatedBy       String?   @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?   @db.NVarChar(Max)
+  IsDeleted       Boolean
+  RawData         String?   @db.NVarChar(Max)
+  IsExecuting     Boolean   @default(false, map: "DF__UserWorkf__IsExe__190BB0C3")
+  IsManually      Boolean   @default(false, map: "DF__UserWorkf__IsMan__164916BB")
+  IsTempRemoved   Boolean   @default(false, map: "DF__UserWorkf__IsTem__3ABC4CB2")
+  ResultFilePath  String?   @db.NVarChar(450)
+
+  @@index([ResultFilePath], map: "IX_UserWorkflowJob_ResultFilePath")
+  @@index([UserWorkflowId, UserCheckListId], map: "IX_UserWorkflowJob_USerWorkflowId_UserCheckListId")
+  @@schema("dbo")
+}
+
+model UserWorkflowLinking {
+  Id                                                                BigInt        @id(map: "PK_UserWorkflowLinking") @default(autoincrement())
+  MainUserWorkflowId                                                BigInt?
+  LinkUserWorkflowId                                                BigInt?
+  CreatedBy                                                         String?       @db.NVarChar(Max)
+  CreatedTime                                                       DateTime?
+  LastModified                                                      DateTime?
+  ModifiedBy                                                        String?       @db.NVarChar(Max)
+  IsDeleted                                                         Boolean
+  OldWorkflowCode                                                   String?       @db.NVarChar(Max)
+  OldWorkflowListId                                                 String?       @db.NVarChar(Max)
+  UserWorkflow_UserWorkflowLinking_LinkUserWorkflowIdToUserWorkflow UserWorkflow? @relation("UserWorkflowLinking_LinkUserWorkflowIdToUserWorkflow", fields: [LinkUserWorkflowId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserWorkflowLinking_UserWorkflow_LinkUserWorkflowId")
+  UserWorkflow_UserWorkflowLinking_MainUserWorkflowIdToUserWorkflow UserWorkflow? @relation("UserWorkflowLinking_MainUserWorkflowIdToUserWorkflow", fields: [MainUserWorkflowId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserWorkflowLinking_UserWorkflow_MainUserWorkflowId")
+
+  @@schema("dbo")
+}
+
+model UserWorkflowNote {
+  Id                     BigInt            @id(map: "PK_UserWorkflowNote") @default(autoincrement())
+  UserId                 BigInt
+  UserWorkflowId         BigInt
+  Note                   String?           @db.NVarChar(Max)
+  CreatedTime            DateTime?
+  IsDeleted              Boolean
+  LastModified           DateTime?
+  ModifiedBy             String?           @db.NVarChar(Max)
+  CreatedBy              String?           @db.NVarChar(Max)
+  PersonalProfile        PersonalProfile   @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserWorkflowNote_PersonalProfile_UserId")
+  UserWorkflowNote       UserWorkflowNote  @relation("UserWorkflowNoteToUserWorkflowNote", fields: [Id], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowNote_UserWorkflow_UserWorkflowId")
+  other_UserWorkflowNote UserWorkflowNote? @relation("UserWorkflowNoteToUserWorkflowNote")
+
+  @@schema("dbo")
+}
+
+model UserWorkflowRelated {
+  Id              BigInt          @id(map: "PK_UserWorkflowRelated") @default(autoincrement())
+  UserWorkflowId  BigInt
+  UserId          BigInt
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowRelated_PersonalProfile_UserId")
+  UserWorkflow    UserWorkflow    @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowRelated_UserWorkflow_UserWorkflowId")
+
+  @@schema("dbo")
+}
+
+model UserWorkflowSeen {
+  Id              BigInt          @id(map: "PK_UserWorkflowSeens") @default(autoincrement())
+  UserWorkflowId  BigInt
+  UserId          BigInt
+  Email           String?         @db.NVarChar(Max)
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowSeens_PersonalProfile_UserId")
+  UserWorkflow    UserWorkflow    @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowSeens_UserWorkflow_UserWorkflowId")
+
+  @@unique([UserId, UserWorkflowId], map: "IDX_UserWorkflowSeen_UserId_UserWorkflowId")
+  @@schema("dbo")
+}
+
+model UserWorkflowShare {
+  Id              BigInt          @id(map: "PK_UserWorkflowShare") @default(autoincrement())
+  UserId          BigInt
+  UserWorkflowId  BigInt
+  Note            String?         @db.NVarChar(Max)
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_UserWorkflowShare_PersonalProfile_UserId")
+  UserWorkflow    UserWorkflow    @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowShare_UserWorkflow")
+
+  @@index([UserId, UserWorkflowId], map: "IX_UserWorkflowShare_USerId_UserWorkflowId")
+  @@schema("dbo")
+}
+
+model UserWorkflowStep {
+  Id                                       BigInt                     @id(map: "PK_UserWorkflowStep") @default(autoincrement())
+  UserWorkflowId                           BigInt
+  UserId                                   BigInt
+  FromUserWorkflowId                       BigInt?
+  WorkflowStepId                           BigInt
+  CreatedBy                                String?                    @db.NVarChar(Max)
+  CreatedTime                              DateTime?
+  LastModified                             DateTime?
+  ModifiedBy                               String?                    @db.NVarChar(Max)
+  IsDeleted                                Boolean
+  IsActived                                Boolean
+  Index                                    Int?
+  StartTime                                DateTime?
+  FinishTime                               DateTime?
+  Action                                   String?                    @db.NVarChar(Max)
+  Note                                     String?                    @db.NVarChar(Max)
+  IsRecall                                 Boolean?
+  IsAddInfo                                Boolean?
+  IsReplace                                Boolean?
+  DueDate                                  DateTime?
+  IsDefault                                Boolean?
+  IsIdea                                   Boolean
+  IsReturned                               Boolean?                   @default(false, map: "DF__UserWorkf__IsRet__1AF3F935")
+  SkippedByUserWorkflowStepId              BigInt?
+  IsAuthorizeApproval                      Boolean                    @default(false, map: "DF__UserWorkf__IsAut__1BE81D6E")
+  AuthorizeApprovalCode                    String?                    @db.NVarChar(Max)
+  ShouldBeHideByUserWorkflowStepIdRecalled BigInt?
+  PersonalProfile                          PersonalProfile            @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowStep_PersonalProfile_UserId")
+  UserWorkflow                             UserWorkflow               @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowStep_UserWorkflow_UserWorkflowId")
+  WorkflowStep                             WorkflowStep               @relation(fields: [WorkflowStepId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowStep_WorkflowStep_WorkflowStepId")
+  UserWorkflowStepRelation                 UserWorkflowStepRelation[]
+
+  @@schema("dbo")
+}
+
+model UserWorkflowStepRelation {
+  Id                 BigInt           @id(map: "PK_UserWorkflowStepRelations") @default(autoincrement())
+  UserWorkflowId     BigInt
+  UserWorkflowStepId BigInt
+  CreatedBy          String?          @db.NVarChar(Max)
+  CreatedTime        DateTime?
+  LastModified       DateTime?
+  ModifiedBy         String?          @db.NVarChar(Max)
+  IsDeleted          Boolean
+  UserWorkflow       UserWorkflow     @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowStepRelations_UserWorkflow_UserWorkflowId")
+  UserWorkflowStep   UserWorkflowStep @relation(fields: [UserWorkflowStepId], references: [Id], onUpdate: NoAction, map: "FK_UserWorkflowStepRelations_UserWorkflowStep_UserWorkflowStepId")
+
+  @@schema("dbo")
+}
+
+model VnptSmartCA {
+  Id              BigInt          @id(map: "PK_VnptSmartCA") @default(autoincrement())
+  UserId          BigInt
+  uid             String          @db.NVarChar(Max)
+  password        String?         @db.NVarChar(Max)
+  client_id       String          @db.NVarChar(Max)
+  client_secret   String          @db.NVarChar(Max)
+  user_secret     String?         @db.NVarChar(Max)
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  ImagePath       String?         @db.NVarChar(Max)
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_VnptSmartCA_PersonalProfile_UserId")
+
+  @@schema("dbo")
+}
+
+model VnptSmartCAQueue {
+  Id                BigInt          @id(map: "PK_VnptSmartCAQueue") @default(autoincrement())
+  UserId            BigInt
+  UserWorkflowId    BigInt
+  UserCheckListId   BigInt
+  UserCheckListName String?         @db.NVarChar(Max)
+  FullName          String?         @db.NVarChar(Max)
+  IsActived         Boolean
+  IsExpired         Boolean
+  RawData           String?         @db.NVarChar(Max)
+  TransactionId     String?         @db.NVarChar(Max)
+  InputBase64       String?         @db.NVarChar(Max)
+  OutputBase64      String?         @db.NVarChar(Max)
+  CreatedBy         String?         @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?         @db.NVarChar(Max)
+  IsDeleted         Boolean
+  ProfileJson       String?         @db.NVarChar(Max)
+  TransactionCode   String?         @db.NVarChar(Max)
+  PersonalProfile   PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_VnptSmartCAQueue_PersonalProfile_UserId")
+  UserWorkflow      UserWorkflow    @relation(fields: [UserWorkflowId], references: [Id], onUpdate: NoAction, map: "FK_VnptSmartCAQueue_UserWorkflow_UserWorkflowId")
+
+  @@schema("dbo")
+}
+
+model Workflow {
+  Id                                        BigInt                    @id(map: "PK_Workflow") @default(autoincrement())
+  Code                                      String?                   @db.NVarChar(Max)
+  Title                                     String?                   @db.NVarChar(Max)
+  IsDetail                                  Boolean?
+  Status                                    Int
+  Version                                   String?                   @db.NVarChar(Max)
+  CreatePermission                          String?                   @db.NVarChar(Max)
+  SeenPermission                            String?                   @db.NVarChar(Max)
+  ImagePath                                 String?                   @db.NVarChar(Max)
+  ImageId                                   BigInt?
+  IsAttachmentActive                        Boolean
+  AllowAttachmentExtensions                 String?                   @db.NVarChar(Max)
+  MaximumSizeSingle                         Int?
+  MaximumSizeTotal                          Int?
+  CategoryId                                BigInt?
+  Order                                     Int?
+  CreatedBy                                 String?                   @db.NVarChar(Max)
+  CreatedTime                               DateTime?
+  LastModified                              DateTime?
+  ModifiedBy                                String?                   @db.NVarChar(Max)
+  IsDeleted                                 Boolean
+  StartDate                                 DateTime?
+  EndDate                                   DateTime?
+  WorkflowType                              Int                       @default(0, map: "DF__Workflow__Workfl__1DD065E0")
+  IsProcess                                 Boolean                   @default(false, map: "DF__Workflow__IsProc__1EC48A19")
+  IsDisableInReport                         Boolean?                  @default(false, map: "DF__Workflow__IsDisa__1FB8AE52")
+  IsDisableInWorkflow                       Boolean?                  @default(false, map: "DF__Workflow__IsDisa__20ACD28B")
+  IsRequired                                Boolean
+  IsVisibleForAdmin                         Boolean?
+  isApprovingAllow                          Boolean?
+  IsNotificationEnabled                     Boolean?
+  ReportId                                  String                    @default(dbgenerated("newid()"), map: "DF__Workflow__Report__21A0F6C4") @db.UniqueIdentifier
+  Note                                      String?                   @db.NVarChar(Max)
+  IsIgnoreInAuthorizeApproval               Boolean?
+  IsIgnoreInFollowAndLinking                Boolean?
+  IsBilingualDisplayForDepartmentAndPostion Boolean?
+  IsCCNotificationAndEmail                  Boolean?                  @default(false, map: "DF__Workflow__IsCCNo__13ACA132")
+  CopyTo                                    String?                   @db.NVarChar(Max)
+  AutoCallFastApiFunction                   String?                   @db.NVarChar(Max)
+  TitleEN                                   String?                   @db.NVarChar(Max)
+  EditPermission                            String?                   @db.NVarChar(Max)
+  RemovePermission                          String?                   @db.NVarChar(Max)
+  ConfigurePermission                       String?                   @db.NVarChar(Max)
+  RecursivePermission                       Boolean?
+  Property                                  Property[]
+  StepRelated                               StepRelated[]
+  UserWorkflow                              UserWorkflow[]
+  WorkflowCategory                          WorkflowCategory?         @relation(fields: [CategoryId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Workflow_WorkflowCategory_CategoryId")
+  WorkflowDefaultTemplate                   WorkflowDefaultTemplate[]
+  WorkflowFavourite                         WorkflowFavourite[]
+  WorkflowStep                              WorkflowStep[]
+
+  @@schema("dbo")
+}
+
+model WorkflowCategory {
+  Id           BigInt     @id(map: "PK_WorkflowCategory") @default(autoincrement())
+  Title        String     @db.NVarChar(Max)
+  Order        Int
+  CreatedBy    String?    @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?    @db.NVarChar(Max)
+  IsDeleted    Boolean
+  TitleEN      String?    @db.NVarChar(Max)
+  Workflow     Workflow[]
+
+  @@schema("dbo")
+}
+
+model WorkflowDefaultTemplate {
+  Id           BigInt    @id(map: "PK_WorkflowDefaultTemplate") @default(autoincrement())
+  WorkflowId   BigInt?
+  FileName     String?   @db.NVarChar(Max)
+  Path         BigInt
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean
+  CheckListId  BigInt?
+  Workflow     Workflow? @relation(fields: [WorkflowId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_WorkflowDefaultTemplate_Workflow_WorkflowId")
+
+  @@schema("dbo")
+}
+
+model WorkflowDefaultTemplateUserCheckList {
+  Id                        BigInt    @id(map: "PK_WorkflowDefaultTemplateUserCheckList") @default(autoincrement())
+  WorkflowDefaultTemplateId BigInt
+  UserCheckListId           BigInt
+  CreatedBy                 String?   @db.NVarChar(Max)
+  CreatedTime               DateTime?
+  LastModified              DateTime?
+  ModifiedBy                String?   @db.NVarChar(Max)
+  IsDeleted                 Boolean
+  UserWorkflowId            BigInt?
+
+  @@schema("dbo")
+}
+
+model WorkflowFavourite {
+  Id              BigInt          @id(map: "PK_WorkflowFavourite") @default(autoincrement())
+  WorkflowId      BigInt
+  UserId          BigInt
+  CreatedBy       String?         @db.NVarChar(Max)
+  CreatedTime     DateTime?
+  LastModified    DateTime?
+  ModifiedBy      String?         @db.NVarChar(Max)
+  IsDeleted       Boolean
+  PersonalProfile PersonalProfile @relation(fields: [UserId], references: [Id], onUpdate: NoAction, map: "FK_WorkflowFavourite_PersonalProfile_UserId")
+  Workflow        Workflow        @relation(fields: [WorkflowId], references: [Id], onUpdate: NoAction, map: "FK_WorkflowFavourite_Workflow_WorkflowId")
+
+  @@schema("dbo")
+}
+
+model WorkflowPara {
+  Id           BigInt    @id(map: "PK_WorkflowPara") @default(autoincrement())
+  ParaName     String    @db.NVarChar(Max)
+  WorkflowId   BigInt?
+  Value        String    @db.NVarChar(Max)
+  IsSystemPara Boolean?
+  Description  String?   @db.NVarChar(Max)
+  IsCheckBox   Boolean?
+  CreatedBy    String?   @db.NVarChar(Max)
+  CreatedTime  DateTime?
+  LastModified DateTime?
+  ModifiedBy   String?   @db.NVarChar(Max)
+  IsDeleted    Boolean   @default(false, map: "DF__WorkflowP__IsDel__247D636F")
+
+  @@schema("dbo")
+}
+
+model WorkflowRule {
+  Id                 BigInt         @id(map: "PK_WorkflowRule") @default(autoincrement())
+  WorkflowStepId     BigInt
+  Title              String         @db.NVarChar(Max)
+  Order              Int?
+  ParentRuleId       BigInt?
+  NextStep           Int
+  ReturnStep         Int
+  RunNextCondition   Boolean
+  CreatedBy          String?        @db.NVarChar(Max)
+  CreatedTime        DateTime?
+  LastModified       DateTime?
+  ModifiedBy         String?        @db.NVarChar(Max)
+  IsDeleted          Boolean
+  Condition          Condition[]
+  WorkflowRule       WorkflowRule?  @relation("WorkflowRuleToWorkflowRule", fields: [ParentRuleId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_WorkflowRule_WorkflowRule_ParentRuleId")
+  other_WorkflowRule WorkflowRule[] @relation("WorkflowRuleToWorkflowRule")
+
+  @@schema("dbo")
+}
+
+model WorkflowStep {
+  Id                               BigInt               @id(map: "PK_WorkflowStep") @default(autoincrement())
+  Title                            String?              @db.NVarChar(Max)
+  WorkflowId                       BigInt?
+  AssignmentRuleId                 BigInt?
+  Step                             Int
+  NextStep                         Int?
+  ReturnStep                       Int
+  Step1                            String?              @db.NVarChar(250)
+  ReturnStep1                      String?              @db.NVarChar(250)
+  NextStep1                        String?              @db.NVarChar(250)
+  Status                           String?              @db.NVarChar(Max)
+  Duration                         Float
+  TimeUnit                         String?              @db.NVarChar(Max)
+  EnterDay                         String?              @db.NVarChar(Max)
+  MailCC                           String?              @db.NVarChar(Max)
+  EmailAddInfo                     BigInt?
+  EmailNext                        BigInt?
+  EmailRecall                      BigInt?
+  EmailReplace                     BigInt?
+  EmailReject                      BigInt?
+  EmailApprove                     BigInt?
+  EmailPrevious                    BigInt?
+  EmailRequestIdea                 BigInt?
+  EmailAuthor                      BigInt?
+  EmailNextCC                      BigInt?
+  LabelAddInfo                     String?              @db.NVarChar(Max)
+  LabelSave                        String?              @db.NVarChar(Max)
+  LabelNext                        String?              @db.NVarChar(Max)
+  LabelReturn                      String?              @db.NVarChar(Max)
+  LabelApprove                     String?              @db.NVarChar(Max)
+  LabelReject                      String?              @db.NVarChar(Max)
+  LabelRecall                      String?              @db.NVarChar(Max)
+  LabelReplace                     String?              @db.NVarChar(Max)
+  LabelIdea                        String?              @db.NVarChar(Max)
+  LabelShare                       String?              @db.NVarChar(Max)
+  LabelExit                        String?              @db.NVarChar(Max)
+  LabelPrint                       String?              @db.NVarChar(Max)
+  CreatedBy                        String?              @db.NVarChar(Max)
+  CreatedTime                      DateTime?
+  LastModified                     DateTime?
+  ModifiedBy                       String?              @db.NVarChar(Max)
+  IsDeleted                        Boolean
+  AssignmentTo                     String?              @db.NVarChar(Max)
+  Chairman                         String?              @db.NVarChar(Max)
+  IsEnableSignature                Boolean?
+  Pattern                          String?              @db.NVarChar(Max)
+  IsRequired                       Boolean?
+  IsLimit                          Boolean?
+  StepCC                           String?              @db.NVarChar(Max)
+  GroupCC                          String?              @db.NVarChar(Max)
+  IsModifyRule                     Boolean?
+  IsIgnoreByPass                   Boolean?             @default(false, map: "DF__WorkflowS__IsIgn__05D8E0BE")
+  AssignmentWorkflow               BigInt?
+  MultipleStepAtTheSameIndex       Boolean?             @default(false, map: "DF__WorkflowS__Multi__07C12930")
+  StepInProcess                    Int?                 @default(0, map: "DF__WorkflowS__StepI__17F790F9")
+  FlowChartId                      String?              @db.NVarChar(50)
+  LinkingWorkflowWhichStatusChange BigInt?
+  StatusChange                     String?              @db.NVarChar(Max)
+  IsDisableWhenHavingUpdated       Boolean?
+  EmailShare                       BigInt?
+  IsDisableAttachment              Boolean?             @default(false, map: "DF__WorkflowS__IsDis__2942188C")
+  IsEnableFlashSignature           Boolean              @default(false, map: "DF__WorkflowS__IsEna__2A363CC5")
+  AddInfoList                      String?              @db.NVarChar(Max)
+  LabelAddInfoEN                   String?              @db.NVarChar(Max)
+  LabelSaveEN                      String?              @db.NVarChar(Max)
+  LabelNextEN                      String?              @db.NVarChar(Max)
+  LabelReturnEN                    String?              @db.NVarChar(Max)
+  LabelApproveEN                   String?              @db.NVarChar(Max)
+  LabelRejectEN                    String?              @db.NVarChar(Max)
+  LabelRecallEN                    String?              @db.NVarChar(Max)
+  LabelReplaceEN                   String?              @db.NVarChar(Max)
+  LabelIdeaEN                      String?              @db.NVarChar(Max)
+  LabelShareEN                     String?              @db.NVarChar(Max)
+  LabelExitEN                      String?              @db.NVarChar(Max)
+  LabelPrintEN                     String?              @db.NVarChar(Max)
+  AutoRemoveOnlyOne                Boolean?             @default(false, map: "DF__WorkflowS__AutoR__4CB63D52")
+  MailReturnCC                     String?              @db.NVarChar(Max)
+  GroupReturnCC                    String?              @db.NVarChar(Max)
+  IsSignManually                   Boolean              @default(false, map: "DF__WorkflowS__IsSig__173D3AF4")
+  IsCCNotifications                Boolean?
+  IsCCNotificationAndEmail         Boolean?
+  UserPropertyName                 String?              @db.NVarChar(Max)
+  IsCC                             Boolean?
+  RequestReplaceList               String?              @db.NVarChar(Max)
+  RequestIdeaList                  String?              @db.NVarChar(Max)
+  TitleEN                          String?              @db.NVarChar(Max)
+  AutoShareWhenActive              String?              @db.NVarChar(Max)
+  StatusEN                         String?              @db.NVarChar(Max)
+  Draft                            String?              @db.NVarChar(Max)
+  Accept                           String?              @db.NVarChar(Max)
+  Reject                           String?              @db.NVarChar(Max)
+  Return                           String?              @db.NVarChar(Max)
+  Returned                         String?              @db.NVarChar(Max)
+  Approve                          String?              @db.NVarChar(Max)
+  Skip                             String?              @db.NVarChar(Max)
+  Approved                         String?              @db.NVarChar(Max)
+  Send                             String?              @db.NVarChar(Max)
+  Replace                          String?              @db.NVarChar(Max)
+  AddInfo                          String?              @db.NVarChar(Max)
+  AddedInfo                        String?              @db.NVarChar(Max)
+  SkipAddInfo                      String?              @db.NVarChar(Max)
+  Recall                           String?              @db.NVarChar(Max)
+  AddInfoRecall                    String?              @db.NVarChar(Max)
+  Idealed                          String?              @db.NVarChar(Max)
+  Ideal                            String?              @db.NVarChar(Max)
+  DraftEN                          String?              @db.NVarChar(Max)
+  AcceptEN                         String?              @db.NVarChar(Max)
+  RejectEN                         String?              @db.NVarChar(Max)
+  ReturnEN                         String?              @db.NVarChar(Max)
+  ReturnedEN                       String?              @db.NVarChar(Max)
+  ApproveEN                        String?              @db.NVarChar(Max)
+  SkipEN                           String?              @db.NVarChar(Max)
+  ApprovedEN                       String?              @db.NVarChar(Max)
+  SendEN                           String?              @db.NVarChar(Max)
+  ReplaceEN                        String?              @db.NVarChar(Max)
+  AddInfoEN                        String?              @db.NVarChar(Max)
+  AddedInfoEN                      String?              @db.NVarChar(Max)
+  SkipAddInfoEN                    String?              @db.NVarChar(Max)
+  RecallEN                         String?              @db.NVarChar(Max)
+  AddInfoRecallEN                  String?              @db.NVarChar(Max)
+  IdealedEN                        String?              @db.NVarChar(Max)
+  IdealEN                          String?              @db.NVarChar(Max)
+  CheckList                        CheckList[]
+  CheckListAllowStep               CheckListAllowStep[]
+  StepRelated                      StepRelated[]
+  UserWorkflow                     UserWorkflow[]
+  UserWorkflowStep                 UserWorkflowStep[]
+  Workflow                         Workflow?            @relation(fields: [WorkflowId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_WorkflowStep_Workflow_WorkflowId")
+
+  @@schema("dbo")
+}
+
+model WorkingTimes {
+  Id             BigInt    @id(map: "PK_WorkingTimes") @default(autoincrement())
+  Title          String    @db.NVarChar(Max)
+  WorkweekId     BigInt?
+  MorningStart   Float?
+  MorningEnd     Float?
+  AfternoonStart Float?
+  AfternoonEnd   Float?
+  CreatedBy      String?   @db.NVarChar(Max)
+  CreatedTime    DateTime?
+  LastModified   DateTime?
+  ModifiedBy     String?   @db.NVarChar(Max)
+  IsDeleted      Boolean
+  Workweek       Workweek? @relation(fields: [WorkweekId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK_WorkingTimes_Workweek_WorkweekId")
+
+  @@schema("dbo")
+}
+
+model Workweek {
+  Id                BigInt              @id(map: "PK_Workweek") @default(autoincrement())
+  Title             String              @db.NVarChar(Max)
+  IsFullTime        Boolean
+  CreatedBy         String?             @db.NVarChar(Max)
+  CreatedTime       DateTime?
+  LastModified      DateTime?
+  ModifiedBy        String?             @db.NVarChar(Max)
+  IsDeleted         Boolean
+  CustomWorkingTime CustomWorkingTime[]
+  WorkingTimes      WorkingTimes[]
+
+  @@schema("dbo")
 }

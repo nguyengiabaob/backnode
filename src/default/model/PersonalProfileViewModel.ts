@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 export interface PersonalProfileView {
   accountName: string;
   id: string;
@@ -17,4 +16,6 @@ export interface PersonalProfileView {
   userCreate: boolean;
   enableEmail: boolean;
   enableNotification: boolean;
+  Label: string;
+  Value: string;
 }

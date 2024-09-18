@@ -1,8 +1,6 @@
-/* eslint-disable prettier/prettier */
 import { ListWorkParentViewModal } from './ListWorkfParentViewModel';
 import { PersonalProfileView } from './PersonalProfileViewModel';
 
-/* eslint-disable prettier/prettier */
 export interface WorkInfViewModel {
   id: number;
   code: string;
