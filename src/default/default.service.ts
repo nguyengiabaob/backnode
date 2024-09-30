@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Data_RESOURCEDA, PersonalProfile, Prisma } from '@prisma/client';
@@ -12,6 +13,7 @@ import {
   GeneralReportViewModel,
   ReportChartViewModel,
 } from './model/GeneralReportViewModel';
+import { TypeSort } from './model/ETypeSort';
 
 @Injectable()
 export class DefaultService {
@@ -315,8 +317,164 @@ export class DefaultService {
         >`Work_StatusReportChartByUserLogin ${emailCurrent}`,
       );
       return newReportCustom;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new HttpException('Error', HttpStatus.BAD_REQUEST);
     }
+  }
+
+  async Work_ReportChartByProject(projectId: string) {
+    const generalReport: GeneralReportViewModel = {
+      PieChart: [],
+      TopChart: [],
+    };
+
+    const email = this.generalService.GetCurrentEmailLogin();
+    if (await this.generalService.Work_CheckProjectRuleByUser(projectId)) {
+      try {
+        generalReport.TopChart = await this.prisma.$queryRaw<
+          ReportChartViewModel[]
+        >`Work_ReportChartByProject ${email}, ${projectId}`;
+
+        generalReport.PieChart = await this.prisma.$queryRaw<
+          ReportChartViewModel[]
+        >`Work_GetWorkStatusByProject ${projectId},''`;
+      } catch (error) {
+        return null;
+      }
+      return generalReport;
+    }
+  }
+  async Work_UpdateJsonData(
+    userWorkFlowId: string,
+    fileName: string,
+    value: string,
+    tableName: string,
+  ) {
+    try {
+      if (tableName === '[Dynamic].Workflow_WORK') {
+        let result = 'None';
+        result = await this.generalService.Work_CheckWorkRuleByUser(
+          userWorkFlowId,
+          true,
+          result,
+        );
+        if (result.toLowerCase() == 'none') {
+          return false;
+        }
+        await this.prisma
+          .$queryRaw`EXEC Work_UpdateJsonData ${userWorkFlowId},${fileName},${value},${tableName}`;
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async Work_Timeline(
+    title: string,
+    projectName: string,
+    group: string,
+    status: string,
+    employee: string,
+  ) {
+    if (
+      CheckValidString(
+        (title ?? '') +
+          (projectName ?? '') +
+          (group ?? '') +
+          (status ?? '') +
+          (employee ?? ''),
+      )
+    ) {
+      let workinfor: WorkInfViewModel[];
+      return workinfor;
+    }
+    return await this.prisma.$queryRaw`EXEC Work_Timeline `;
+  }
+
+  async Work_PersonalProfiles(email: string) {
+    if (CheckValidString(email)) {
+      return [];
+    }
+    let sql = `Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1`;
+    if (email) {
+      sql = `Select 'P:'+ ltrim(rtrim( str(Id))) as Id, AccountName,Name,FullName,Email from [dbo].[PersonalProfile] where UserStatus <> -1 and email=${email}`;
+    }
+
+    let result = await this.prisma.$queryRaw<
+      PersonalProfileView[]
+    >`${Prisma.sql([sql])}`;
+
+    if (email && result) {
+      const AdminPage = 'vuongnq,admin';
+      result = result
+        .filter((item) => AdminPage.includes(item.accountName))
+        .map((acc) => {
+          return {
+            ...acc,
+            default: true,
+          };
+        });
+    }
+    return result;
+  }
+
+  async Work_GetWorkInProcess(
+    title: string,
+    projectName: string,
+    status: string,
+    employee: string,
+    type: string,
+    isComplete: number,
+    layout: number,
+    group: string,
+    _pageNumber?: number,
+    _rowNumber?: number,
+    projectType: string,
+    typeSort: TypeSort,
+  ) {
+    let emp = await this.generalService.GetCurrentUserLoginReturnId();
+    let result: WorkInfViewModel[];
+    const pageNumber = _pageNumber ?? 0;
+    const rowNumber = _rowNumber ?? 100;
+    title = title ? title : '';
+    projectName = projectName ? projectName : '';
+    group = group ? group : '';
+    status = status ? status : '';
+    employee = employee ? employee : emp;
+    type = type ? type : '';
+    projectType = projectType ? projectType : '';
+
+    if (
+      CheckValidString(
+        title + projectName + group + status + employee + type + projectType,
+      )
+    ) {
+      return [];
+    }
+    if (type || type.toLowerCase() === 'xử lý') {
+      result = await this.prisma.$queryRaw<
+        WorkInfViewModel[]
+      >`Work_GetWorkByTypeInput ${title},${projectName},${group},${status},${employee},${isComplete},"","",true,${type}`;
+    } else {
+      result = await this.prisma.$queryRaw<
+        WorkInfViewModel[]
+      >`Work_GetByCondition ${title},${projectName},${group},${status},${employee},${isComplete},"","",false,${type}`;
+    }
+    try {
+      if (layout == 1) {
+        let totalPage = (result.length / rowNumber).toFixed();
+        let totalWork = result.length;
+        switch (typeSort) {
+          case TypeSort.Index:
+          case TypeSort.Lastest:
+            break;
+
+          default:
+            break;
+        }
+      }
+    } catch (error) {}
   }
 }

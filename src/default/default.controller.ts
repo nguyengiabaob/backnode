@@ -3,6 +3,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Put,
   Query,
 } from '@nestjs/common';
 import { DefaultService } from './default.service';
@@ -15,7 +16,6 @@ export class DefaultController {
   async work_getallproject(
     @Query('multiProjectName') multiProjectName: string,
   ) {
-    console.log('sdasdas', multiProjectName);
     const result: any[] = [];
     const resultArray = multiProjectName.split(',');
     for (const item in resultArray) {
@@ -136,7 +136,76 @@ export class DefaultController {
       projectType,
     );
     if (result) {
+      return JSON.stringify(result, (_, v) => {
+        return typeof v === 'bigint' ? v.toString() : v;
+      });
+    }
+    return new HttpException('Error', HttpStatus.BAD_REQUEST);
+  }
+
+  @Get('Work_ReportChartByProject')
+  async Work_ReportChartByProject(projectId: string) {
+    const result =
+      await this.defaultService.Work_ReportChartByProject(projectId);
+    if (result !== null) {
+      return JSON.stringify(result, (_, v) => {
+        return typeof v === 'bigint' ? v.toString() : v;
+      });
+    }
+    return new HttpException('Error', HttpStatus.BAD_REQUEST);
+  }
+
+  @Put('Work_UpdateJsonData')
+  async Work_UpdateJsonData(
+    @Query('userWorkFlowId') userWorkFlowId: number,
+    @Query('fileName') fileName: string,
+    @Query('value') value: string,
+  ) {
+    console.log('userWorkFlowId?.toString()', userWorkFlowId?.toString());
+
+    const result = await this.defaultService.Work_UpdateJsonData(
+      userWorkFlowId?.toString(),
+      fileName,
+      value,
+      '[Dynamic].Workflow_WORK',
+    );
+    if (result !== null) {
       return result;
+    }
+    return new HttpException('Error', HttpStatus.BAD_REQUEST);
+  }
+
+  @Get('Work_Timeline')
+  async Work_Timeline(
+    title: string,
+    projectName: string,
+    group: string,
+    status: string,
+    employee: string,
+  ) {
+    const result = await this.defaultService.Work_Timeline(
+      title,
+      projectName,
+      group,
+      status,
+      employee,
+    );
+    if (result) {
+      return JSON.stringify(result, (_, v) => {
+        return typeof v === 'bigint' ? v.toString() : v;
+      });
+    }
+    return new HttpException('Error', HttpStatus.BAD_REQUEST);
+  }
+
+  @Get('Work_PersonalProfiles')
+  async Work_PersonalProfiles() {
+    const result = await this.defaultService.Work_PersonalProfiles('');
+
+    if (result) {
+      return JSON.stringify(result, (_, v) => {
+        return typeof v === 'bigint' ? v.toString() : v;
+      });
     }
     return new HttpException('Error', HttpStatus.BAD_REQUEST);
   }

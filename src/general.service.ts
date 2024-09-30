@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
-import { PersonalProfile } from '@prisma/client';
+import { Data_RESOURCEDA, Data_WORK, PersonalProfile } from '@prisma/client';
 import { env } from 'process';
 import { WorkInfViewModel } from './default/model/WorkInfoViewModel';
 import { PersonalProfileView } from './default/model/PersonalProfileViewModel';
@@ -79,5 +79,145 @@ export class GeneralFunction {
       };
     });
     return result;
+  }
+
+  async Work_CheckWorkRuleByUser(
+    WorkId: string,
+    IsCurrent: boolean,
+    strResult: string,
+  ) {
+    if (!WorkId || WorkId?.toLowerCase() === 'underfined') {
+      return '';
+    }
+    try {
+      const email = this.GetCurrentEmailLogin();
+      if (!email) {
+        return 'none';
+      }
+      const work = await this.prisma
+        .$queryRaw<Data_WORK>`select * from Dynamic.Data_WORK where UserWorkflowId=${WorkId}`;
+      if (work) {
+        const project = await this.prisma
+          .$queryRaw<Data_RESOURCEDA>`select Id,UserWorkflowId,Ten,RuleViewWork from Dynamic.Data_RESOURCEDA where UserWorkflowId=${work.Duan} and ISNULL(IsDeleted,'False')='False'`;
+        if (project) {
+          const employeeId = await this.GetCurrentUserLoginReturnId();
+
+          if (
+            work.Nguoigiao &&
+            work.Nguoigiao?.split(';').find((item) => item === employeeId)
+          ) {
+            return 'Full';
+          }
+          const AdminPage = 'vuongnq,admin';
+          const user = await this.GetCurrentUserLogin();
+          if (
+            AdminPage.split(',').find((accName) => accName === user.AccountName)
+          ) {
+            return 'AdminFull';
+          }
+
+          if (IsCurrent) {
+            const status = await this.prisma
+              .$queryRaw<Data_WORK>`select * from Dynamic.Data_RESOURCETTFC where UserWorkflowId=${work.TrangThaiCongViec}`;
+
+            if (!status) {
+              if (status.TrangThaiCongViec.toLowerCase() === 'hoàn thành') {
+                if (
+                  work.Nguoigiao.split(';').find(
+                    (item) => item === employeeId,
+                  ) ||
+                  work.Nguoixuly.split(';').find(
+                    (item) => item === employeeId,
+                  ) ||
+                  work.Nguoiphoihop.split(';').find(
+                    (item) => item === employeeId,
+                  )
+                ) {
+                  return 'hoàn thành(logtime)';
+                }
+              }
+            }
+            const checkManager = await this.prisma
+              .$queryRaw<boolean>`EXEC Work_CheckUserIsManager ${project.UserWorkflowId},${employeeId}`;
+
+            if (checkManager) {
+              return 'ManagerEdit';
+            }
+
+            if (project?.RuleViewWork.trim() == '1') {
+              if (strResult === 'None' || strResult === '') {
+                if (
+                  await this.Work_CheckProjectRuleByUser(
+                    project.UserWorkflowId.toString(),
+                  )
+                ) {
+                  strResult = 'View';
+                }
+              }
+            }
+
+            if (work.Nguoixuly.split(';').find((item) => item === employeeId)) {
+              return 'Edit';
+            }
+
+            if (
+              work.Nguoitheodoi.split(';').find(
+                (item) => item === employeeId,
+              ) ||
+              work.Nguoiphoihop.split(';').find(
+                (item) => item === employeeId,
+              ) ||
+              work.NguoiXuLyDauTien.split(';').find(
+                (item) => item === employeeId,
+              )
+            ) {
+              return 'EditView';
+            }
+          }
+
+          if (strResult.toLowerCase() === 'none') {
+            const ruleViewProject = await this.prisma
+              .$queryRaw<number>`Exec Work_RuleViewProject ${work.Duan},${employeeId}`;
+
+            if (
+              ruleViewProject > 0 ||
+              work.Nguoitheodoi.split(';').find(
+                (item) => item === employeeId,
+              ) ||
+              work.Nguoiphoihop.split(';').find((item) => item === employeeId)
+            ) {
+              strResult = 'View';
+            }
+            if (
+              work.Nguoigiao.split(';').find((item) => item === employeeId) ||
+              work.Nguoixuly.split(';').find((item) => item === employeeId)
+            ) {
+              strResult = 'Edit';
+            }
+
+            if (work.CongViecCha) {
+              strResult = await this.Work_CheckWorkRuleByUser(
+                work.CongViecCha,
+                false,
+                strResult,
+              );
+            }
+          }
+        }
+      }
+    } catch (error) {
+      return undefined;
+    }
+
+    if (!strResult && strResult.toLowerCase() === 'none') {
+      const employeeId = await this.GetCurrentUserLoginReturnId();
+      const check = await this.prisma
+        .$queryRaw`EXEC Work_CheckAllowWorkChildViewParent ${WorkId},${employeeId}`;
+
+      if (check) {
+        return 'View';
+      }
+    }
+    return strResult;
   }
 }
